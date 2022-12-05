@@ -614,6 +614,14 @@ class PureS3Path(PurePath):
     _flavour = _s3_flavour
     __slots__ = ()
 
+    def joinpath(self, *args):
+        """Combine this path with one or several arguments, and return a
+        new path representing a subpath. Anchored arguments are treated as relative.
+        """
+        string_keys = [a.as_posix() if isinstance(a, (Path, PurePath)) else a for a in args]
+        new_key = self._flavour.sep.join([self.key] + string_keys)
+        return self.__class__(self._flavour.sep + self.bucket + new_key)
+
     @classmethod
     def from_uri(cls, uri):
         """
