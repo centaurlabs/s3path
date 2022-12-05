@@ -1,6 +1,8 @@
 """
 s3path provides a Pythonic API to S3 by wrapping boto3 with pathlib interface
 """
+import sys
+
 from os import stat_result
 from itertools import chain
 from functools import lru_cache
@@ -41,7 +43,45 @@ class _S3Flavour(_PosixFlavour):
     is_supported = bool(boto3)
 
     def parse_parts(self, parts):
-        drv, root, parsed = super().parse_parts(parts)
+        parsed = []
+        sep = self.sep
+        altsep = self.altsep
+        drv = root = ''
+        it = reversed(parts)
+        for part in it:
+            if not part:
+                continue
+            if altsep:
+                part = part.replace(altsep, sep)
+            drv, root, rel = self.splitroot(part)
+            if sep in rel:
+                first = True
+                for x in reversed(rel.split(sep)):
+                    # Prevent compression of multiple consecutive instances of sep (e.g. "bucket//file.txt")
+                    if x != '.' and (x or not first):
+                        parsed.append(sys.intern(x))
+                    first = False
+            else:
+                if rel and rel != '.':
+                    parsed.append(sys.intern(rel))
+            if drv or root:
+                if not drv:
+                    # If no drive is present, try to find one in the previous
+                    # parts. This makes the result of parsing e.g.
+                    # ("C:", "/", "a") reasonably intuitive.
+                    for part in it:
+                        if not part:
+                            continue
+                        if altsep:
+                            part = part.replace(altsep, sep)
+                        drv = self.splitroot(part)[0]
+                        if drv:
+                            break
+                break
+        if drv or root:
+            parsed.append(drv + root)
+        parsed.reverse()
+
         for part in parsed[1:]:
             if part == '..':
                 index = parsed.index(part)

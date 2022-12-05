@@ -42,7 +42,7 @@ def test_absolute_paths():
 
 
 def test_slashes_single_double_dots():
-    assert PureS3Path('foo//bar') == PureS3Path('foo/bar')
+    assert PureS3Path('foo//bar') != PureS3Path('foo/bar')
     assert PureS3Path('foo/./bar') == PureS3Path('foo/bar')
     assert PureS3Path('foo/../bar') == PureS3Path('bar')
     assert PureS3Path('../bar') == PureS3Path('../bar')
@@ -55,7 +55,7 @@ def test_operators():
 
 
 def test_parts():
-    assert PureS3Path('foo//bar').parts == ('foo', 'bar')
+    assert PureS3Path('foo//bar').parts == ('foo', '', 'bar')
     assert PureS3Path('foo/./bar').parts == ('foo', 'bar')
     assert PureS3Path('foo/../bar').parts == ('bar',)
     assert PureS3Path('../bar').parts == ('..', 'bar')
@@ -91,7 +91,7 @@ def test_anchor():
 
 
 def test_parents():
-    assert tuple(PureS3Path('foo//bar').parents) == (PureS3Path('foo'), PureS3Path('.'))
+    assert tuple(PureS3Path('foo//bar').parents) == (PureS3Path('foo//'), PureS3Path('foo'), PureS3Path('.'))
     assert tuple(PureS3Path('foo/./bar').parents) == (PureS3Path('foo'), PureS3Path('.'))
     assert tuple(PureS3Path('foo/../bar').parents) == (PureS3Path('.'),)
     assert tuple(PureS3Path('../bar').parents) == (PureS3Path('..'), PureS3Path('.'))
@@ -100,7 +100,7 @@ def test_parents():
 
 
 def test_parent():
-    assert PureS3Path('foo//bar').parent == PureS3Path('foo')
+    assert PureS3Path('foo//bar').parent == PureS3Path('foo//')
     assert PureS3Path('foo/./bar').parent == PureS3Path('foo')
     assert PureS3Path('foo/../bar').parent == PureS3Path('.')
     assert PureS3Path('../bar').parent == PureS3Path('..')
@@ -136,6 +136,7 @@ def test_uri():
     assert PureS3Path('/etc/passwd').as_uri() == 's3://etc/passwd'
     assert PureS3Path('/etc/init.d/apache2').as_uri() == 's3://etc/init.d/apache2'
     assert PureS3Path('/bucket/key').as_uri() == 's3://bucket/key'
+    assert PureS3Path('/multi//slash//file.txt').as_uri() == 's3://multi//slash//file.txt'
 
 
 def test_absolute():
