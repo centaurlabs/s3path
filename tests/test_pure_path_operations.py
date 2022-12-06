@@ -163,6 +163,7 @@ def test_joinpath():
     assert PureS3Path('/etc').joinpath(PureS3Path('passwd')) == PureS3Path('/etc/passwd')
     assert PureS3Path('/etc').joinpath('init.d', 'apache2') == PureS3Path('/etc/init.d/apache2')
     assert PureS3Path('/etc').joinpath('/key/with/slash') == PureS3Path('/etc//key/with/slash')
+    assert PureS3Path('/etc/compound').joinpath('/key/with/slash') == PureS3Path('/etc/compound//key/with/slash')
 
 
 def test_match():

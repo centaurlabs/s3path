@@ -880,7 +880,11 @@ class PureS3Path(PurePath):
         new path representing a subpath. Anchored arguments are treated as relative.
         """
         string_keys = [a.as_posix() if isinstance(a, (Path, PurePath)) else a for a in args]
-        new_key = self._flavour.sep.join([self.key] + string_keys)
+        if self.key:
+            old_key = self._flavour.sep + self.key
+            new_key = self._flavour.sep.join([old_key] + string_keys)
+        else:
+            new_key = self._flavour.sep.join([self.key] + string_keys)
         return self.__class__(self._flavour.sep + self.bucket + new_key)
 
     @classmethod
