@@ -31,6 +31,8 @@ def test_join_strs():
 def test_join_paths():
     assert PureS3Path(Path('foo'), Path('bar')) == PureS3Path('foo/bar')
 
+def test_from_bucket_key():
+    assert PureS3Path.from_bucket_key('foo', '/bar//baz') == PureS3Path('/foo//bar//baz')
 
 def test_empty():
     assert PureS3Path() == PureS3Path('.')

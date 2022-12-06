@@ -940,9 +940,7 @@ class PureS3Path(PurePath):
         if len(bucket.parts) != 2:
             raise ValueError(f'bucket argument contains more then one path element: {bucket}')
         key = cls(key)
-        if key.is_absolute():
-            key = key.relative_to('/')
-        return bucket / key
+        return bucket.joinpath(key)
 
     def as_uri(self) -> str:
         """
